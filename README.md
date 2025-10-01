@@ -1,63 +1,46 @@
 # Porada Legal AI
 
-Монорепозиторий для AI-платформы анализа юридических документов.
+AI-powered legal document analysis platform with intelligent chat assistant for contract review and risk assessment.
 
-## Структура проекта
+## 🎯 About
+
+Porada Legal AI helps legal professionals analyze contracts, identify risks, and get instant insights through an intelligent chat interface. Upload your legal documents and ask questions to get comprehensive analysis and recommendations.
+
+## 🚀 Key Features
+
+- **AI Chat Assistant** - Interactive document analysis and Q&A
+- **Document Upload** - Support for PDF, DOC, DOCX, TXT files
+- **Risk Assessment** - Automated contract risk analysis
+- **Real-time Analysis** - Instant insights and recommendations
+
+## 📁 Project Structure
 
 ```
 porada-legal-ai/
 ├── apps/
-│   ├── frontend/          # React фронтенд
+│   ├── frontend/          # React frontend
 │   ├── backend/           # Backend API
-│   └── ml-service/        # ML сервис
+│   └── ml-service/        # ML service
 ├── packages/
-│   ├── shared/            # Общие утилиты
-│   ├── types/             # TypeScript типы
-│   └── ui/                # UI компоненты
-└── docs/                  # Документация
+│   ├── shared/            # Shared utilities
+│   ├── types/             # TypeScript types
+│   └── ui/                # UI components
+└── docs/                  # Documentation
 ```
 
-## Фронтенд (React + TypeScript)
-
-### Технологии
-- React 18 + TypeScript
-- Vite для сборки
-- Tailwind CSS для стилей
-- React Router для навигации
-- React Query для данных
-
-### Запуск
+## 🚀 Getting Started
 
 ```bash
+# Install dependencies
 cd apps/frontend
 npm install
+
+# Start development server
 npm run dev
 ```
 
-Фронтенд будет доступен на http://localhost:5173
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-### Скрипты
-- `npm run dev` - запуск dev сервера
-- `npm run build` - сборка для продакшена
-- `npm run type-check` - проверка типов
-- `npm run lint` - проверка кода
-
-## Статус разработки
-
-- ✅ Структура монорепозитория
-- ✅ React фронтенд с базовыми страницами
-- ✅ TypeScript конфигурация
-- ✅ Tailwind CSS настройка
-- 🔄 Backend API (в разработке)
-- 🔄 ML сервис (в разработке)
-
-## Разработка
-
-1. Клонируйте репозиторий
-2. Установите зависимости в нужной папке
-3. Запустите dev сервер
-4. Начните разработку!
-
-## Лицензия
+## 📄 License
 
 MIT License
