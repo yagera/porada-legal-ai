@@ -41,7 +41,7 @@ export function Header({ onMenuClick }: HeaderProps): React.ReactElement {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
-              placeholder="Search documents, analyses, or clauses..."
+              placeholder="Search documents, ask AI questions..."
               className="w-full"
             />
           </div>
@@ -81,7 +81,7 @@ export function Header({ onMenuClick }: HeaderProps): React.ReactElement {
             value={searchQuery}
             onChange={setSearchQuery}
             onSearch={handleSearch}
-            placeholder="Search documents, analyses, or clauses..."
+            placeholder="Search documents, ask AI questions..."
             className="w-full"
           />
         </div>

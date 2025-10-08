@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { 
+  MessageSquare,
   Home, 
   Upload, 
   FileText, 
@@ -23,6 +24,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps): React.ReactElement {
   const location = useLocation();
 
   const navigationItems = [
+    {
+      name: 'AI Assistant',
+      href: '/ai-assistant',
+      icon: MessageSquare,
+      description: 'Chat with AI about your documents'
+    },
     {
       name: 'Dashboard',
       href: '/dashboard',
@@ -62,7 +69,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps): React.ReactElement {
   return (
     <>
       {}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:pt-16">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:pt-20">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white border-r border-slate-200 px-6 pb-4">
           {}
           <nav className="flex flex-1 flex-col">

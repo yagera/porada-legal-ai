@@ -14,6 +14,7 @@ import { StatCard } from '@/components/Dashboard/StatCard';
 import { RecentAnalyses } from '@/components/Dashboard/RecentAnalyses';
 import { RiskOverview } from '@/components/Dashboard/RiskOverview';
 import { QuickActions } from '@/components/Dashboard/QuickActions';
+import { Chat } from '@/components/Chat';
 
 export function Dashboard(): React.ReactElement {
   const stats = {
@@ -108,6 +109,39 @@ export function Dashboard(): React.ReactElement {
         </div>
         <div>
           <RiskOverview />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">AI Legal Assistant</h2>
+          <Chat 
+            placeholder="Ask me about your legal documents, contracts, or any legal questions..."
+            maxHeight="h-96"
+          />
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">Quick Legal Insights</h2>
+          <div className="space-y-4">
+            <Card className="p-4">
+              <h3 className="font-medium text-slate-900 mb-2">Contract Review Tips</h3>
+              <p className="text-sm text-slate-600">
+                Always check for termination clauses, liability limitations, and payment terms when reviewing contracts.
+              </p>
+            </Card>
+            <Card className="p-4">
+              <h3 className="font-medium text-slate-900 mb-2">Risk Assessment</h3>
+              <p className="text-sm text-slate-600">
+                Our AI analyzes 15+ risk factors including financial, legal, and operational risks in your documents.
+              </p>
+            </Card>
+            <Card className="p-4">
+              <h3 className="font-medium text-slate-900 mb-2">Compliance Check</h3>
+              <p className="text-sm text-slate-600">
+                Ensure your documents comply with current regulations and industry standards.
+              </p>
+            </Card>
+          </div>
         </div>
       </div>
       <Card className="bg-green-50 border-green-200">

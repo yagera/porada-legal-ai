@@ -17,7 +17,7 @@ export function Layout(): React.ReactElement {
         <main 
           className={cn(
             'flex-1 transition-all duration-300 ease-in-out',
-            'lg:ml-64',
+            'lg:ml-64 lg:pt-4',
             sidebarOpen && 'ml-64',
           )}
         >
