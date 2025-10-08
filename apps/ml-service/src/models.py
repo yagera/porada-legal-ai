@@ -9,7 +9,7 @@ class MultiTaskLegalModel(nn.Module):
         super().__init__()
         
         self.config = AutoConfig.from_pretrained(model_name)
-        self.bert = AutoModel.from_pretrained(model_name)
+        self.bert = AutoModel.from_pretrained(model_name, use_safetensors=True)
         
         hidden_size = self.config.hidden_size
         
@@ -87,7 +87,7 @@ class MultiTaskLegalModel(nn.Module):
     
     @classmethod
     def from_pretrained(cls, load_directory: str, model_name: str):
-        checkpoint = torch.load(f"{load_directory}/task_heads.pt")
+        checkpoint = torch.load(f"{load_directory}/task_heads.pt", weights_only=True)
         
         model = cls(
             model_name=model_name,
@@ -95,7 +95,7 @@ class MultiTaskLegalModel(nn.Module):
             num_risk_labels=checkpoint['num_risk_labels']
         )
         
-        model.bert = AutoModel.from_pretrained(load_directory)
+        model.bert = AutoModel.from_pretrained(load_directory, use_safetensors=True)
         model.ner_classifier.load_state_dict(checkpoint['ner_classifier'])
         model.risk_classifier.load_state_dict(checkpoint['risk_classifier'])
         
