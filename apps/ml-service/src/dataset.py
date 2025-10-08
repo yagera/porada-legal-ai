@@ -173,10 +173,11 @@ class LegalDatasetLoader:
                 raise ValueError("No text or tokens found in dataset")
             
             if "ner_tags" in examples:
-                tokenized["ner_labels"] = self._align_labels(
-                    examples["ner_tags"],
-                    tokenized.word_ids(batch_index=0) if "text" not in examples else None
-                )
+                aligned_labels = []
+                for i in range(len(examples["ner_tags"])):
+                    word_ids = tokenized.word_ids(batch_index=i) if "tokens" in examples else None
+                    aligned_labels.append(self._align_labels(examples["ner_tags"][i], word_ids))
+                tokenized["ner_labels"] = aligned_labels
             else:
                 tokenized["ner_labels"] = [[0] * self.config.data.max_length] * len(examples["text"])
             
