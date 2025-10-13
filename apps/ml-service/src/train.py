@@ -272,12 +272,12 @@ def main(cfg: DictConfig):
         metric_for_best_model=cfg.training.metric_for_best_model,
         greater_is_better=cfg.training.greater_is_better,
         logging_steps=cfg.training.logging_steps,
-        report_to=[],  # Отключаем встроенные логгеры
+        report_to=[],
         save_total_limit=cfg.training.save_total_limit,
         dataloader_num_workers=cfg.data.num_workers,
         seed=42,
-        remove_unused_columns=False,  # Важно для мультитаск обучения
-        save_safetensors=False,  # Отключаем safetensors для совместимости
+        remove_unused_columns=False,
+        save_safetensors=False,
     )
 
     trainer = MultiTaskTrainerWrapper(
