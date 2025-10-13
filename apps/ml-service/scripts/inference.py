@@ -1,6 +1,10 @@
 import torch
 from transformers import AutoTokenizer
 from typing import Dict, List, Tuple, Optional
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 from models import MultiTaskLegalModel, get_model_info
 from legal_dataset import get_label_names
 import numpy as np

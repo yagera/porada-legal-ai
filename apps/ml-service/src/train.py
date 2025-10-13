@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from io import BytesIO
 
-from legal_dataset import LegalDatasetLoader, get_label_names
-from models import MultiTaskLegalModel, get_model_info
+from .legal_dataset import LegalDatasetLoader, get_label_names
+from .models import MultiTaskLegalModel, get_model_info
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
