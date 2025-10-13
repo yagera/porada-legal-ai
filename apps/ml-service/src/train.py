@@ -277,6 +277,7 @@ def main(cfg: DictConfig):
         dataloader_num_workers=cfg.data.num_workers,
         seed=42,
         remove_unused_columns=False,  # Важно для мультитаск обучения
+        save_safetensors=False,  # Отключаем safetensors для совместимости
     )
 
     trainer = MultiTaskTrainerWrapper(
