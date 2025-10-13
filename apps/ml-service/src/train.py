@@ -13,6 +13,8 @@ from seqeval.metrics import precision_score, recall_score
 from .dataset import LegalDatasetLoader, get_label_names
 from .models import MultiTaskLegalModel, get_model_info
 
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 
 class MultiTaskMetrics:
     def __init__(self, label_names: Dict[str, list]):
@@ -116,7 +118,7 @@ class MultiTaskTrainerWrapper(Trainer):
         self.alpha = alpha
         self.beta = beta
     
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
         ner_labels = inputs.get("ner_labels")
         risk_labels = inputs.get("risk_labels")
         
