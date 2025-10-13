@@ -34,7 +34,7 @@ training:
   load_best_model_at_end: true
   metric_for_best_model: "f1"
   greater_is_better: true
-  output_dir: "./outputs"
+  output_dir: "./outputs/russian_contract_clauses"
   save_total_limit: 3
   logging_steps: 50
   report_to: null
@@ -54,6 +54,6 @@ defaults:
 
 hydra:
   run:
-    dir: ./outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ./outputs/${dataset_name}/${now:%Y-%m-%d_%H-%M-%S}
   job:
     chdir: false
