@@ -1,6 +1,6 @@
 model:
   name: "DeepPavlov/rubert-base-cased"
-  num_ner_labels: 7
+  num_ner_labels: 6 #7 for ruslaw or syn
   num_risk_labels: 3
   dropout: 0.1
 

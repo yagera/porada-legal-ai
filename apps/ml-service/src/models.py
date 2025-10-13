@@ -7,7 +7,11 @@ class MultiTaskLegalModel(nn.Module):
     def __init__(self, model_name: str, num_ner_labels: int, num_risk_labels: int, dropout: float = 0.1):
         super().__init__()
         self.config = AutoConfig.from_pretrained(model_name)
-        self.bert = AutoModel.from_pretrained(model_name, use_safetensors=True)
+        try:
+            self.bert = AutoModel.from_pretrained(model_name, use_safetensors=False)
+        except Exception as e:
+            print(f"Failed to load model with safetensors=False, trying with use_safetensors=None: {e}")
+            self.bert = AutoModel.from_pretrained(model_name, use_safetensors=None)
 
         hidden_size = self.config.hidden_size
 
@@ -116,7 +120,7 @@ class MultiTaskLegalModel(nn.Module):
             num_risk_labels=checkpoint['num_risk_labels']
         )
 
-        model.bert = AutoModel.from_pretrained(load_directory, use_safetensors=True)
+        model.bert = AutoModel.from_pretrained(load_directory, use_safetensors=False)
         model.ner_classifier.load_state_dict(checkpoint['ner_classifier'])
         model.risk_classifier.load_state_dict(checkpoint['risk_classifier'])
 
