@@ -29,6 +29,11 @@ class MultiTaskMetrics:
         ner_logits, risk_logits = predictions
         ner_labels, risk_labels = labels
 
+        ner_logits = ner_logits.numpy() if hasattr(ner_logits, 'numpy') else ner_logits
+        risk_logits = risk_logits.numpy() if hasattr(risk_logits, 'numpy') else risk_logits
+        ner_labels = ner_labels.numpy() if hasattr(ner_labels, 'numpy') else ner_labels
+        risk_labels = risk_labels.numpy() if hasattr(risk_labels, 'numpy') else risk_labels
+
         ner_preds = np.argmax(ner_logits, axis=2)
         ner_true_labels = []
         ner_pred_labels = []
@@ -199,11 +204,11 @@ class MultiTaskTrainerWrapper(Trainer):
         if loss is not None and torch.isnan(loss):
             loss = torch.tensor(0.0)
 
-        ner_logits = outputs["ner_logits"].detach().cpu().numpy()
-        risk_logits = outputs["risk_logits"].detach().cpu().numpy()
+        ner_logits = outputs["ner_logits"].detach().cpu()
+        risk_logits = outputs["risk_logits"].detach().cpu()
 
-        ner_labels = inputs["ner_labels"].detach().cpu().numpy()
-        risk_labels = inputs["risk_labels"].detach().cpu().numpy()
+        ner_labels = inputs["ner_labels"].detach().cpu()
+        risk_labels = inputs["risk_labels"].detach().cpu()
 
         if prediction_loss_only:
             return (loss, None, None)
