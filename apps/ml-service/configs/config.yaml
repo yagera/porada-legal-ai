@@ -54,6 +54,6 @@ defaults:
 
 hydra:
   run:
-    dir: ./outputs/${dataset_name}/${now:%Y-%m-%d_%H-%M-%S}
+    dir: ./outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
   job:
     chdir: false
