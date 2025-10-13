@@ -1,11 +1,11 @@
 model:
   name: "DeepPavlov/rubert-base-cased"
-  num_ner_labels: 6 #7 for ruslaw or syn
+  num_ner_labels: 7  # 7 for ruslaw, synthetic, russian_contract_clauses
   num_risk_labels: 3
   dropout: 0.1
 
 data:
-  dataset_name: "ruleganner"  # ruleganner, ruslaw, synthetic
+  dataset_name: "russian_contract_clauses"  # ruleganner, ruslaw, synthetic, russian_contract_clauses
   train_split: 0.8
   val_split: 0.1
   test_split: 0.1
@@ -17,7 +17,7 @@ data:
 training:
   num_epochs: 3
   learning_rate: 2e-5
-  # resume_from_checkpoint: "./outputs/checkpoint-100"  # Incompatible: 7 vs 6 NER labels
+  resume_from_checkpoint: "./outputs/checkpoint-100"  # Incompatible: 7 vs 6 NER labels
   weight_decay: 0.01
   warmup_ratio: 0.1
   mixed_precision: true
@@ -40,7 +40,7 @@ training:
   report_to: null
 
 mlflow:
-  experiment_name: "porada-legal-ruleganner"
+  experiment_name: "porada-legal-contract-clauses"
   tracking_uri: "./mlruns"
   run_name: null
   tags:

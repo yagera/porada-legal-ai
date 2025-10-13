@@ -21,6 +21,9 @@ class LegalDatasetLoader:
         elif self.dataset_name == "synthetic":
             dataset = self._create_synthetic_risk_dataset()
             label_info = {"num_ner_labels": 7, "num_risk_labels": 3}
+        elif self.dataset_name == "russian_contract_clauses":
+            dataset = self._load_russian_contract_clauses()
+            label_info = {"num_ner_labels": 7, "num_risk_labels": 3}
         else:
             raise ValueError(f"Unknown dataset: {self.dataset_name}")
 
@@ -42,6 +45,54 @@ class LegalDatasetLoader:
                 "test": dataset["test"]
             })
         dataset = dataset.map(self._add_synthetic_risk_labels)
+        return dataset
+
+    def _load_russian_contract_clauses(self) -> DatasetDict:
+        try:
+            dataset = load_dataset("smlp-io/russian_contract_clauses", cache_dir=self.config.data.cache_dir)
+        except Exception as e:
+            print(f"Warning: Could not load russian_contract_clauses: {e}")
+            print("Creating synthetic legal dataset instead")
+            return self._create_synthetic_legal_dataset()
+
+        def convert_contract_format(example):
+            text = example.get("text", "")
+            if not text or len(text.strip()) == 0:
+                return None
+
+            if len(text) > 2000:
+                text = text[:2000]
+
+            tokens = text.split()
+            if len(tokens) == 0:
+                return None
+
+            ner_labels = self._simple_ner_tagging(tokens)
+            risk_label = self._classify_risk_from_text(text)
+
+            return {
+                "text": text,
+                "tokens": tokens,
+                "ner_tags": ner_labels,
+                "risk_label": risk_label
+            }
+
+        dataset = dataset.map(convert_contract_format, remove_columns=dataset["train"].column_names)
+        dataset = dataset.filter(lambda x: x is not None and x.get("text") is not None)
+
+        if len(dataset["train"]) == 0:
+            print("Warning: No valid data in russian_contract_clauses, creating synthetic dataset")
+            return self._create_synthetic_legal_dataset()
+
+        if "validation" not in dataset:
+            train_test = dataset["train"].train_test_split(test_size=0.2, seed=42)
+            val_test = train_test["test"].train_test_split(test_size=0.5, seed=42)
+            dataset = DatasetDict({
+                "train": train_test["train"],
+                "validation": val_test["train"],
+                "test": val_test["test"]
+            })
+
         return dataset
 
     def _load_ruslaw(self) -> DatasetDict:
