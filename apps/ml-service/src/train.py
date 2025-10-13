@@ -211,7 +211,7 @@ class MultiTaskTrainerWrapper(Trainer):
         return (loss, (ner_logits, risk_logits), (ner_labels, risk_labels))
 
 
-@hydra.main(version_base=None, config_path=".", config_name="config")
+@hydra.main(version_base=None, config_path="../configs", config_name="config")
 def main(cfg: DictConfig):
     print(f"Training with config: {cfg.data.dataset_name}")
     print(f"Model: {cfg.model.name}")
