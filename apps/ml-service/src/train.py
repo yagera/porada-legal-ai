@@ -289,9 +289,13 @@ def main(cfg: DictConfig):
         beta=cfg.training.beta,
         callbacks=[mlflow_callback]
     )
+    
+    resume_from_checkpoint = cfg.training.get("resume_from_checkpoint")
+    if resume_from_checkpoint and os.path.exists(resume_from_checkpoint):
+        print(f"Resuming training from checkpoint: {resume_from_checkpoint}")
 
     print("Starting training...")
-    train_result = trainer.train()
+    train_result = trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
     train_metrics = train_result.metrics
     train_metrics_filtered = {k: v for k, v in train_metrics.items() if isinstance(v, (int, float))}
