@@ -199,7 +199,7 @@ def main(cfg: DictConfig):
         metric_for_best_model=cfg.training.metric_for_best_model,
         greater_is_better=cfg.training.greater_is_better,
         logging_steps=cfg.training.logging_steps,
-        report_to=cfg.training.report_to,
+        report_to=cfg.training.report_to if cfg.training.report_to is not None else [],
         save_total_limit=cfg.training.save_total_limit,
         dataloader_num_workers=cfg.data.num_workers,
         seed=42,
