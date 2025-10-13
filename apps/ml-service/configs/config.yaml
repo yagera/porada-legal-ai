@@ -5,7 +5,7 @@ model:
   dropout: 0.1
 
 data:
-  dataset_name: "ruslaw"
+  dataset_name: "synthetic"  # ruleganner, ruslaw, synthetic
   train_split: 0.8
   val_split: 0.1
   test_split: 0.1
@@ -22,31 +22,37 @@ training:
   mixed_precision: true
   fp16: false
   bf16: true
-  alpha: 0.5
-  beta: 0.5
+  alpha: 0.6  # Вес для NER loss
+  beta: 0.4   # Вес для risk loss
   gradient_accumulation_steps: 1
   max_grad_norm: 1.0
-  eval_strategy: "epoch"
-  save_strategy: "epoch"
+  eval_strategy: "steps"
+  eval_steps: 100
+  save_strategy: "steps"
+  save_steps: 100
   load_best_model_at_end: true
   metric_for_best_model: "f1"
   greater_is_better: true
   output_dir: "./outputs"
-  save_total_limit: 2
+  save_total_limit: 3
   logging_steps: 50
   report_to: null
 
 mlflow:
-  experiment_name: "russian-legal-ner"
+  experiment_name: "porada-legal-multitask"
   tracking_uri: "./mlruns"
   run_name: null
   tags:
     project: "porada-legal-ai"
-    model: "rubert"
+    model: "rubert-base"
+    task: "ner+risk"
+    version: "v1.0"
 
 defaults:
-  - _self_ 
+  - _self_
 
 hydra:
   run:
     dir: ./outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  job:
+    chdir: false
