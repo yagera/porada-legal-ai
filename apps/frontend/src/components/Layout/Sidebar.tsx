@@ -2,7 +2,6 @@ import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { 
   Home, 
-  Upload, 
   FileText, 
   History, 
   Settings, 
@@ -28,12 +27,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps): React.ReactElement {
       href: '/dashboard',
       icon: Home,
       description: 'Overview and analytics'
-    },
-    {
-      name: 'Upload Document',
-      href: '/upload',
-      icon: Upload,
-      description: 'Analyze new contracts'
     },
     {
       name: 'Analysis Results',
