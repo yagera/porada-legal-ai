@@ -23,7 +23,7 @@ export function Logo({ className, showText = true, size = 'md' }: LogoProps): Re
 
   return (
     <Link 
-      to="/dashboard" 
+      to="/" 
       className={cn(
         'flex items-center space-x-2 hover:opacity-80 transition-opacity',
         className

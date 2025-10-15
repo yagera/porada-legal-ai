@@ -6,7 +6,6 @@ import { Layout } from '@/components/Layout/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary';
 import { NotificationProvider } from '@/components/Notification/NotificationProvider';
 import { LoadingProvider } from '@/components/Loading/LoadingProvider';
-import { AIAssistant } from '@/pages/AIAssistant/AIAssistant';
 import { Dashboard } from '@/pages/Dashboard/Dashboard';
 import { DocumentUpload } from '@/pages/DocumentUpload/DocumentUpload';
 import { AnalysisResults } from '@/pages/AnalysisResults/AnalysisResults';
@@ -41,8 +40,7 @@ export function App(): React.ReactElement {
             <div className="min-h-screen bg-background-primary">
               <Routes>
                 <Route path="/" element={<Layout />}>
-                  <Route index element={<Navigate to="/ai-assistant" replace />} />
-                  <Route path="ai-assistant" element={<AIAssistant />} />
+                  <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="upload" element={<DocumentUpload />} />
                   <Route path="analysis/:analysisId" element={<AnalysisResults />} />
