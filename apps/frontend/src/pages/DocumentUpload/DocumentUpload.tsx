@@ -6,6 +6,7 @@ import { Card } from '@/components/UI/Card';
 import { useNotifications } from '@/components/Notification/NotificationProvider';
 import { useLoading } from '@/components/Loading/LoadingProvider';
 import { cn, formatFileSize } from '@/utils';
+import { apiClient } from '@/utils/api';
 
 export function DocumentUpload(): React.ReactElement {
   const [files, setFiles] = useState<File[]>([]);
@@ -82,29 +83,37 @@ export function DocumentUpload(): React.ReactElement {
     });
 
     try {
-
-      for (let i = 0; i <= 100; i += 10) {
-
-        updateProgress(i, `Uploading... ${i}%`);
-        await new Promise(resolve => setTimeout(resolve, 200));
+      const results = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const progress = Math.round((i / files.length) * 100);
+        
+        updateProgress(progress, `Uploading ${file.name}...`);
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const result = await apiClient.postFormData('/api/analyze', formData);
+        results.push(result);
       }
 
-      updateProgress(100, 'Processing documents...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
+      updateProgress(100, 'Analysis complete!');
+      
       showNotification({
         type: 'success',
         title: 'Upload Successful',
-        message: `${files.length} document(s) uploaded and queued for analysis.`,
+        message: `${files.length} document(s) uploaded and analyzed successfully.`,
       });
 
       setFiles([]);
 
     } catch (error) {
+      console.error('Upload error:', error);
       showNotification({
         type: 'error',
         title: 'Upload Failed',
-        message: 'An error occurred while uploading your documents. Please try again.',
+        message: error instanceof Error ? error.message : 'An error occurred while uploading your documents. Please try again.',
       });
     } finally {
       setUploading(false);

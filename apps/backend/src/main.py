@@ -8,7 +8,10 @@ import logging
 
 from .services.model_service import ModelService
 from .services.storage_service import StorageService
+from .services.auth_service import AuthService
 from .models.analysis import AnalysisRequest, AnalysisResponse, DocumentInfo
+from .models.user import UserCreate, UserLogin, UserResponse, User
+from .middleware.auth import get_current_user, get_current_user_optional
 from .config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -30,6 +33,7 @@ app.add_middleware(
 
 model_service = ModelService()
 storage_service = StorageService()
+auth_service = AuthService()
 
 @app.on_event("startup")
 async def startup_event():
@@ -40,6 +44,9 @@ async def startup_event():
     
     await storage_service.initialize()
     logger.info("Storage service initialized successfully")
+    
+    auth_service.create_demo_user()
+    logger.info("Demo user created")
 
 @app.get("/")
 async def root():
@@ -56,6 +63,7 @@ async def health_check():
 @app.post("/api/analyze", response_model=AnalysisResponse)
 async def analyze_document(
     file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
     analysis_type: str = "full"
 ):
     try:
@@ -80,7 +88,10 @@ async def analyze_document(
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 @app.get("/api/analysis/{analysis_id}", response_model=AnalysisResponse)
-async def get_analysis(analysis_id: str):
+async def get_analysis(
+    analysis_id: str,
+    current_user: User = Depends(get_current_user)
+):
     try:
         result = await storage_service.get_analysis(analysis_id)
         if not result:
@@ -91,7 +102,11 @@ async def get_analysis(analysis_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to retrieve analysis: {str(e)}")
 
 @app.get("/api/analyses", response_model=List[DocumentInfo])
-async def list_analyses(limit: int = 20, offset: int = 0):
+async def list_analyses(
+    limit: int = 20, 
+    offset: int = 0,
+    current_user: User = Depends(get_current_user)
+):
     try:
         analyses = await storage_service.list_analyses(limit, offset)
         return analyses
@@ -100,7 +115,10 @@ async def list_analyses(limit: int = 20, offset: int = 0):
         raise HTTPException(status_code=500, detail=f"Failed to list analyses: {str(e)}")
 
 @app.delete("/api/analysis/{analysis_id}")
-async def delete_analysis(analysis_id: str):
+async def delete_analysis(
+    analysis_id: str,
+    current_user: User = Depends(get_current_user)
+):
     try:
         success = await storage_service.delete_analysis(analysis_id)
         if not success:
@@ -109,6 +127,45 @@ async def delete_analysis(analysis_id: str):
     except Exception as e:
         logger.error(f"Error deleting analysis: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to delete analysis: {str(e)}")
+
+@app.post("/api/auth/register", response_model=UserResponse)
+async def register(user_data: UserCreate):
+    try:
+        user = auth_service.create_user(user_data)
+        access_token = auth_service.create_access_token(data={"sub": user.id})
+        
+        return UserResponse(user=user, token=access_token)
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+@app.post("/api/auth/login", response_model=UserResponse)
+async def login(login_data: UserLogin):
+    try:
+        user = auth_service.authenticate_user(login_data.email, login_data.password)
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        access_token = auth_service.create_access_token(data={"sub": user.id})
+        
+        return UserResponse(user=user, token=access_token)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+@app.get("/api/auth/me", response_model=User)
+async def get_current_user_info(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@app.post("/api/auth/logout")
+async def logout(current_user: User = Depends(get_current_user)):
+    return {"message": "Logged out successfully"}
 
 if __name__ == "__main__":
     uvicorn.run(

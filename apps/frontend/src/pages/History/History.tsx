@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/UI/Button';
@@ -6,53 +6,45 @@ import { Card } from '@/components/UI/Card';
 import { SearchInput } from '@/components/UI/SearchInput';
 import { cn, formatRelativeTime, getRiskLevelColor } from '@/utils';
 import { RiskLevel } from '@/types';
+import { useNotifications } from '@/components/Notification/NotificationProvider';
+import { apiClient } from '@/utils/api';
+
+interface Analysis {
+  analysis_id: string;
+  filename: string;
+  status: string;
+  risk_level: string;
+  created_at: string;
+  file_size: number;
+}
 
 export function History(): React.ReactElement {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRiskLevel, setSelectedRiskLevel] = useState<RiskLevel | 'all'>('all');
+  const [analyses, setAnalyses] = useState<Analysis[]>([]);
+  const { showNotification } = useNotifications();
 
-  const analyses = [
-    {
-      id: '1',
-      documentName: 'Service Agreement.pdf',
-      status: 'completed',
-      riskLevel: 'medium' as RiskLevel,
-      riskScore: 35,
-      completedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      uploadedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
-    },
-    {
-      id: '2',
-      documentName: 'Employment Contract.pdf',
-      status: 'completed',
-      riskLevel: 'high' as RiskLevel,
-      riskScore: 75,
-      completedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-      uploadedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    },
-    {
-      id: '3',
-      documentName: 'NDA Template.pdf',
-      status: 'processing',
-      riskLevel: null,
-      riskScore: null,
-      completedAt: null,
-      uploadedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-    },
-    {
-      id: '4',
-      documentName: 'Software License Agreement.pdf',
-      status: 'completed',
-      riskLevel: 'low' as RiskLevel,
-      riskScore: 15,
-      completedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      uploadedAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
-    },
-  ];
+  useEffect(() => {
+    loadAnalyses();
+  }, []);
+
+  const loadAnalyses = async () => {
+    try {
+      const data = await apiClient.get<Analysis[]>('/api/analyses');
+      setAnalyses(data);
+    } catch (error) {
+      console.error('Error loading analyses:', error);
+      showNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to load analysis history',
+      });
+    }
+  };
 
   const filteredAnalyses = analyses.filter(analysis => {
-    const matchesSearch = analysis.documentName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRisk = selectedRiskLevel === 'all' || analysis.riskLevel === selectedRiskLevel;
+    const matchesSearch = analysis.filename.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRisk = selectedRiskLevel === 'all' || analysis.risk_level === selectedRiskLevel;
     return matchesSearch && matchesRisk;
   });
 
@@ -196,7 +188,7 @@ export function History(): React.ReactElement {
               </thead>
               <tbody>
                 {filteredAnalyses.map((analysis) => (
-                  <tr key={analysis.id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <tr key={analysis.analysis_id} className="border-b border-slate-100 hover:bg-slate-50">
                     <td className="py-4 px-4">
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
@@ -206,7 +198,7 @@ export function History(): React.ReactElement {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-slate-900">
-                            {analysis.documentName}
+                            {analysis.filename}
                           </p>
                         </div>
                       </div>
@@ -220,28 +212,27 @@ export function History(): React.ReactElement {
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      {analysis.riskLevel ? (
+                      {analysis.risk_level ? (
                         <span className={cn(
                           'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                          getRiskLevelColor(analysis.riskLevel)
+                          getRiskLevelColor(analysis.risk_level as RiskLevel)
                         )}>
-                          {analysis.riskLevel.charAt(0).toUpperCase() + analysis.riskLevel.slice(1)}
-                          {analysis.riskScore && ` (${analysis.riskScore}%)`}
+                          {analysis.risk_level.charAt(0).toUpperCase() + analysis.risk_level.slice(1)}
                         </span>
                       ) : (
                         <span className="text-slate-400 text-xs">-</span>
                       )}
                     </td>
                     <td className="py-4 px-4 text-sm text-slate-600">
-                      {formatRelativeTime(analysis.uploadedAt)}
+                      {formatRelativeTime(new Date(analysis.created_at))}
                     </td>
                     <td className="py-4 px-4 text-sm text-slate-600">
-                      {analysis.completedAt ? formatRelativeTime(analysis.completedAt) : '-'}
+                      {analysis.status === 'completed' ? formatRelativeTime(new Date(analysis.created_at)) : '-'}
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center space-x-2">
                         {analysis.status === 'completed' && (
-                          <Link to={`/analysis/${analysis.id}`}>
+                          <Link to={`/analysis/${analysis.analysis_id}`}>
                             <Button variant="ghost" size="sm" leftIcon={<Eye className="h-4 w-4" />}>
                               View
                             </Button>
@@ -262,11 +253,11 @@ export function History(): React.ReactElement {
         {}
         <div className="md:hidden space-y-4">
           {filteredAnalyses.map((analysis) => (
-            <div key={analysis.id} className="border border-slate-200 rounded-lg p-4">
+            <div key={analysis.analysis_id} className="border border-slate-200 rounded-lg p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-medium text-slate-900 truncate">
-                    {analysis.documentName}
+                    {analysis.filename}
                   </h3>
                   <div className="flex items-center space-x-2 mt-1">
                     <span className={cn(
@@ -275,12 +266,12 @@ export function History(): React.ReactElement {
                     )}>
                       {getStatusIcon(analysis.status)} {analysis.status}
                     </span>
-                    {analysis.riskLevel && (
+                    {analysis.risk_level && (
                       <span className={cn(
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                        getRiskLevelColor(analysis.riskLevel)
+                        getRiskLevelColor(analysis.risk_level as RiskLevel)
                       )}>
-                        {analysis.riskLevel.charAt(0).toUpperCase() + analysis.riskLevel.slice(1)}
+                        {analysis.risk_level.charAt(0).toUpperCase() + analysis.risk_level.slice(1)}
                       </span>
                     )}
                   </div>
@@ -288,15 +279,15 @@ export function History(): React.ReactElement {
               </div>
 
               <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
-                <span>Uploaded: {formatRelativeTime(analysis.uploadedAt)}</span>
-                {analysis.completedAt && (
-                  <span>Completed: {formatRelativeTime(analysis.completedAt)}</span>
+                <span>Uploaded: {formatRelativeTime(new Date(analysis.created_at))}</span>
+                {analysis.status === 'completed' && (
+                  <span>Completed: {formatRelativeTime(new Date(analysis.created_at))}</span>
                 )}
               </div>
 
               <div className="flex items-center space-x-2">
                 {analysis.status === 'completed' && (
-                  <Link to={`/analysis/${analysis.id}`}>
+                  <Link to={`/analysis/${analysis.analysis_id}`}>
                     <Button variant="ghost" size="sm" leftIcon={<Eye className="h-4 w-4" />}>
                       View
                     </Button>

@@ -6,11 +6,15 @@ import { Layout } from '@/components/Layout/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary';
 import { NotificationProvider } from '@/components/Notification/NotificationProvider';
 import { LoadingProvider } from '@/components/Loading/LoadingProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/Auth/ProtectedRoute';
 import { Dashboard } from '@/pages/Dashboard/Dashboard';
 import { DocumentUpload } from '@/pages/DocumentUpload/DocumentUpload';
 import { AnalysisResults } from '@/pages/AnalysisResults/AnalysisResults';
 import { History } from '@/pages/History/History';
 import { Settings } from '@/pages/Settings/Settings';
+import { Login } from '@/pages/Auth/Login';
+import { Register } from '@/pages/Auth/Register';
 import { NotFound } from '@/pages/NotFound/NotFound';
 
 const queryClient = new QueryClient({
@@ -35,26 +39,34 @@ export function App(): React.ReactElement {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <NotificationProvider>
-          <LoadingProvider>
-            <div className="min-h-screen bg-background-primary">
-              <Routes>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="upload" element={<DocumentUpload />} />
-                  <Route path="analysis/:analysisId" element={<AnalysisResults />} />
-                  <Route path="history" element={<History />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-            </div>
-            {process.env.NODE_ENV === 'development' && (
-              <ReactQueryDevtools initialIsOpen={false} />
-            )}
-          </LoadingProvider>
-        </NotificationProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <LoadingProvider>
+              <div className="min-h-screen bg-background-primary">
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Layout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Navigate to="/dashboard" replace />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="upload" element={<DocumentUpload />} />
+                    <Route path="analysis/:analysisId" element={<AnalysisResults />} />
+                    <Route path="history" element={<History />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                </Routes>
+              </div>
+              {process.env.NODE_ENV === 'development' && (
+                <ReactQueryDevtools initialIsOpen={false} />
+              )}
+            </LoadingProvider>
+          </NotificationProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

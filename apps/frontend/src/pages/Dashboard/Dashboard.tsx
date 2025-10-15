@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   FileText, 
   AlertTriangle,
@@ -11,42 +11,58 @@ import { StatCard } from '@/components/Dashboard/StatCard';
 import { RecentAnalyses } from '@/components/Dashboard/RecentAnalyses';
 import { RiskOverview } from '@/components/Dashboard/RiskOverview';
 import { QuickActions } from '@/components/Dashboard/QuickActions';
+import { useNotifications } from '@/components/Notification/NotificationProvider';
+import { apiClient } from '@/utils/api';
+
+interface Analysis {
+  analysis_id: string;
+  filename: string;
+  status: string;
+  risk_level: string;
+  created_at: string;
+  file_size: number;
+}
 
 export function Dashboard(): React.ReactElement {
+  const [analyses, setAnalyses] = useState<Analysis[]>([]);
+  const { showNotification } = useNotifications();
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    loadAnalyses();
   }, []);
 
-  const stats = {
-    totalAnalyses: 24,
-    highRiskDocuments: 3,
-    pendingAnalyses: 2,
-    averageRiskScore: 35,
+  const loadAnalyses = async () => {
+    try {
+      const data = await apiClient.get<Analysis[]>('/api/analyses');
+      setAnalyses(data);
+    } catch (error) {
+      console.error('Error loading analyses:', error);
+      showNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to load dashboard data',
+      });
+    }
   };
 
-  const recentAnalyses = [
-    {
-      id: '1',
-      name: 'Service Agreement.pdf',
-      status: 'completed' as const,
-      riskLevel: 'medium' as const,
-      completedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    },
-    {
-      id: '2',
-      name: 'Employment Contract.pdf',
-      status: 'completed' as const,
-      riskLevel: 'high' as const,
-      completedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-    },
-    {
-      id: '3',
-      name: 'NDA Template.pdf',
-      status: 'processing' as const,
-      riskLevel: null,
-      completedAt: null,
-    },
-  ];
+  const stats = {
+    totalAnalyses: analyses.length,
+    highRiskDocuments: analyses.filter(a => a.risk_level === 'high' || a.risk_level === 'critical').length,
+    pendingAnalyses: analyses.filter(a => a.status === 'processing').length,
+    averageRiskScore: analyses.length > 0 ? Math.round(analyses.reduce((acc, a) => {
+      const riskScores = { low: 25, medium: 50, high: 75, critical: 90 };
+      return acc + (riskScores[a.risk_level as keyof typeof riskScores] || 0);
+    }, 0) / analyses.length) : 0,
+  };
+
+  const recentAnalyses = analyses.slice(0, 3).map(analysis => ({
+    id: analysis.analysis_id,
+    name: analysis.filename,
+    status: analysis.status as 'completed' | 'processing' | 'failed',
+    riskLevel: analysis.risk_level as 'low' | 'medium' | 'high' | 'critical' | null,
+    completedAt: analysis.status === 'completed' ? new Date(analysis.created_at) : null,
+  }));
 
   return (
     <div className="space-y-8">

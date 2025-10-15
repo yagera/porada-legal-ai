@@ -2,16 +2,25 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/UI/Button';
 import { cn } from '@/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export function UserDropdown(): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const user = {
-    name: 'German Khakov',
-    email: 'gera@gmail.com',
+  const userData = user ? {
+    name: user.name,
+    email: user.email,
     avatar: null,
-    initials: 'GK',
+    initials: user.name.split(' ').map(n => n[0]).join('').toUpperCase(),
+  } : {
+    name: 'Guest',
+    email: 'guest@example.com',
+    avatar: null,
+    initials: 'G',
   };
 
   useEffect(() => {
@@ -28,14 +37,13 @@ export function UserDropdown(): React.ReactElement {
   }, []);
 
   const handleLogout = () => {
-
-    console.log('Logout clicked');
+    logout();
+    navigate('/login');
     setIsOpen(false);
   };
 
   const handleSettings = () => {
-
-    console.log('Settings clicked');
+    navigate('/settings');
     setIsOpen(false);
   };
 
@@ -50,20 +58,19 @@ export function UserDropdown(): React.ReactElement {
       >
         {}
         <div className="flex items-center justify-center w-8 h-8 bg-navy-900 text-white rounded-full text-sm font-medium">
-          {user.avatar ? (
+          {userData.avatar ? (
             <img
-              src={user.avatar}
-              alt={user.name}
+              src={userData.avatar}
+              alt={userData.name}
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
-            user.initials
+            userData.initials
           )}
         </div>
 
-        {}
         <span className="hidden md:block text-sm font-medium text-slate-700">
-          {user.name}
+          {userData.name}
         </span>
 
         <ChevronDown className={cn(
@@ -78,22 +85,22 @@ export function UserDropdown(): React.ReactElement {
           <div className="p-4 border-b border-slate-200">
             <div className="flex items-center space-x-3">
               <div className="flex items-center justify-center w-10 h-10 bg-navy-900 text-white rounded-full text-sm font-medium">
-                {user.avatar ? (
+                {userData.avatar ? (
                   <img
-                    src={user.avatar}
-                    alt={user.name}
+                    src={userData.avatar}
+                    alt={userData.name}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
-                  user.initials
+                  userData.initials
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate">
-                  {user.name}
+                  {userData.name}
                 </p>
                 <p className="text-sm text-slate-500 truncate">
-                  {user.email}
+                  {userData.email}
                 </p>
               </div>
             </div>

@@ -112,7 +112,11 @@ class MultiTaskLegalModel(nn.Module):
 
     @classmethod
     def from_pretrained(cls, load_directory: str, model_name: str):
-        checkpoint = torch.load(f"{load_directory}/task_heads.pt", weights_only=True)
+        checkpoint = torch.load(
+            f"{load_directory}/task_heads.pt", 
+            map_location=torch.device('cpu'),
+            weights_only=False
+        )
 
         model = cls(
             model_name=model_name,
@@ -120,7 +124,19 @@ class MultiTaskLegalModel(nn.Module):
             num_risk_labels=checkpoint['num_risk_labels']
         )
 
-        model.bert = AutoModel.from_pretrained(load_directory, use_safetensors=False)
+        try:
+            model.bert = AutoModel.from_pretrained(
+                load_directory, 
+                use_safetensors=False,
+                torch_dtype=torch.float32
+            )
+        except Exception as e:
+            print(f"Failed to load BERT model with safetensors=False, trying with use_safetensors=None: {e}")
+            model.bert = AutoModel.from_pretrained(
+                load_directory, 
+                use_safetensors=None,
+                torch_dtype=torch.float32
+            )
         model.ner_classifier.load_state_dict(checkpoint['ner_classifier'])
         model.risk_classifier.load_state_dict(checkpoint['risk_classifier'])
 

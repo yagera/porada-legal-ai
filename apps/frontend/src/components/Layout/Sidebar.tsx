@@ -30,7 +30,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps): React.ReactElement {
     },
     {
       name: 'Analysis Results',
-      href: '/analysis',
+      href: '/history',
       icon: FileText,
       description: 'View detailed results'
     },

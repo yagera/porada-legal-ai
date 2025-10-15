@@ -65,7 +65,6 @@ class StorageService:
             raise
     
     async def extract_text(self, file_id: str) -> str:
-        """Extract text from uploaded document"""
         try:
             # Get file info
             file_info = await self._get_file_info(file_id)
@@ -74,11 +73,9 @@ class StorageService:
             
             file_path = f"documents/{file_id}/{file_info['filename']}"
             
-            # Download file
             response = self.client.get_object(self.bucket_name, file_path)
             content = response.read()
             
-            # Extract text based on file type
             filename = file_info['filename'].lower()
             
             if filename.endswith('.pdf'):
@@ -97,7 +94,6 @@ class StorageService:
             raise
     
     def _extract_pdf_text(self, content: bytes) -> str:
-        """Extract text from PDF"""
         try:
             pdf_reader = PyPDF2.PdfReader(BytesIO(content))
             text = ""
@@ -109,7 +105,6 @@ class StorageService:
             return ""
     
     def _extract_docx_text(self, content: bytes) -> str:
-        """Extract text from DOCX"""
         try:
             doc = docx.Document(BytesIO(content))
             text = ""
@@ -121,15 +116,12 @@ class StorageService:
             return ""
     
     async def save_analysis(self, file_id: str, analysis_result: AnalysisResult) -> str:
-        """Save analysis result"""
         try:
             analysis_id = str(uuid.uuid4())
             analysis_path = f"analyses/{analysis_id}/result.json"
             
-            # Convert to dict for JSON serialization
             analysis_dict = analysis_result.dict()
             
-            # Save to MinIO
             self.client.put_object(
                 self.bucket_name,
                 analysis_path,
@@ -138,7 +130,6 @@ class StorageService:
                 content_type="application/json"
             )
             
-            # Save metadata
             metadata = {
                 "analysis_id": analysis_id,
                 "file_id": file_id,
@@ -163,9 +154,7 @@ class StorageService:
             raise
     
     async def get_analysis(self, analysis_id: str) -> Optional[AnalysisResponse]:
-        """Get analysis result by ID"""
         try:
-            # Get metadata
             metadata_path = f"analyses/{analysis_id}/metadata.json"
             try:
                 response = self.client.get_object(self.bucket_name, metadata_path)
@@ -173,7 +162,6 @@ class StorageService:
             except S3Error:
                 return None
             
-            # Get analysis result
             result_path = f"analyses/{analysis_id}/result.json"
             try:
                 response = self.client.get_object(self.bucket_name, result_path)
@@ -201,7 +189,6 @@ class StorageService:
             return None
     
     async def list_analyses(self, limit: int = 20, offset: int = 0) -> List[DocumentInfo]:
-        """List all analyses with pagination"""
         try:
             analyses = []
             objects = self.client.list_objects(
@@ -210,13 +197,10 @@ class StorageService:
                 recursive=True
             )
             
-            # Filter metadata files
             metadata_files = [obj for obj in objects if obj.object_name.endswith('metadata.json')]
             
-            # Sort by creation time (newest first)
             metadata_files.sort(key=lambda x: x.last_modified, reverse=True)
             
-            # Apply pagination
             paginated_files = metadata_files[offset:offset + limit]
             
             for obj in paginated_files:
@@ -224,10 +208,8 @@ class StorageService:
                     response = self.client.get_object(self.bucket_name, obj.object_name)
                     metadata = json.loads(response.read().decode('utf-8'))
                     
-                    # Get file info
                     file_info = await self._get_file_info(metadata['file_id'])
                     if file_info:
-                        # Get risk level from analysis result
                         result_path = f"analyses/{metadata['analysis_id']}/result.json"
                         try:
                             response = self.client.get_object(self.bucket_name, result_path)
@@ -256,9 +238,7 @@ class StorageService:
             raise
     
     async def delete_analysis(self, analysis_id: str) -> bool:
-        """Delete analysis and associated files"""
         try:
-            # Get metadata to find file_id
             metadata_path = f"analyses/{analysis_id}/metadata.json"
             try:
                 response = self.client.get_object(self.bucket_name, metadata_path)
@@ -267,7 +247,6 @@ class StorageService:
             except S3Error:
                 return False
             
-            # Delete analysis files
             analysis_objects = self.client.list_objects(
                 self.bucket_name,
                 prefix=f"analyses/{analysis_id}/",
@@ -277,7 +256,6 @@ class StorageService:
             for obj in analysis_objects:
                 self.client.remove_object(self.bucket_name, obj.object_name)
             
-            # Delete original file
             file_info = await self._get_file_info(file_id)
             if file_info:
                 file_path = f"documents/{file_id}/{file_info['filename']}"
@@ -294,7 +272,6 @@ class StorageService:
             return False
     
     async def _get_file_info(self, file_id: str) -> Optional[Dict[str, Any]]:
-        """Get file information by file_id"""
         try:
             objects = self.client.list_objects(
                 self.bucket_name,
@@ -303,7 +280,7 @@ class StorageService:
             )
             
             for obj in objects:
-                if not obj.object_name.endswith('/'):  # Skip directories
+                if not obj.object_name.endswith('/'):
                     return {
                         'filename': obj.object_name.split('/')[-1],
                         'size': obj.size,
@@ -317,7 +294,6 @@ class StorageService:
             return None
     
     async def is_connected(self) -> bool:
-        """Check if storage service is connected"""
         try:
             return self.client.bucket_exists(self.bucket_name)
         except Exception:
